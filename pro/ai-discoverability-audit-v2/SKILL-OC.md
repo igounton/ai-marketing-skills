@@ -1,92 +1,59 @@
 ---
 name: ai-discoverability-audit-v2
-description: "Find out if AI can find you — and fix it before your competitors do. 6-dimension scored audit with cross-skill routing, re-audit comparison, and 30-day action plan."
-version: "2.0"
-price: "$19"
-author: "@BrianRWagner"
+version: "3.1.0"
+updated: 2026-03-19
+platform: openclaw
+description: "Audit brand visibility to AI search engines (ChatGPT, Perplexity, Claude, Gemini). Score, gaps, 30-day fix plan. NOT for: traditional SEO, content writing, or social media."
 ---
 
-**Platform:** OpenClaw (token-optimized)
+# AI Discoverability Audit — OpenClaw
 
-## Required Inputs
+AI traffic converts better than Google traffic. If you're not showing up in AI answers, you're missing the highest-intent traffic on the internet.
 
-- Brand name + website URL
-- Primary product/service in plain English
-- Target customer (specific role/situation)
-- Top 3 competitors (real names)
-- Prior audit file path (triggers re-audit mode)
+## Inputs
+1. Brand/company name + URL
+2. Primary ICP (one sentence)
+3. Top 3 use cases (problems you solve)
+4. 2-3 competitors (optional)
 
-## Mode
+## 6 Audit Sections
 
-| Mode | Output | Use when |
-|------|--------|----------|
-| `quick` | Phase 1 only + top 3 priority fixes | Fast visibility check |
-| `standard` | All 6 sections + scored report + 30-day plan | Default quarterly audit |
-| `deep` | Full + quarterly comparison + competitive benchmarking + 90-day roadmap | Full overhaul |
+### 1. AI Presence Score (0-100)
+Query brand in 5 AI search scenarios across ChatGPT, Perplexity, Claude, Google AI Overviews:
+- "best [category] tool for [ICP]"
+- "[problem] solution for [industry]"
+- "alternative to [competitor]"
+- "[brand name] reviews"
+- "how to [use case]"
 
-## Memory Protocol
+Scoring: Top answer = 20pts, Mentioned = 10pts, Not found = 0. Average across platforms.
 
-**Save to:** `audits/ai-discoverability-[brand]-YYYY-MM-DD.md`
+### 2. Entity Clarity (Pass/Fail)
+Ask AI: "What does [brand] do?" Compare to reality. If muddy → identify cause (too many offerings, outdated info, name confusion).
 
-**Re-audit mode:** If prior audit file exists → load it first → show `[Prior Score] → [New Score] = [Delta]` per section → highlight biggest improvements/regressions → update action plan based on what was implemented.
+### 3. Content Signal Strength (Strong/Weak/Missing)
+Blog/resources? Answers ICP's AI questions? Citable data? Structured headings? Identify top 5 questions ICP asks AI that brand doesn't answer.
 
-## 6 Audit Sections (score each 1–5)
+### 4. Schema & Structured Data (X/3)
+Check for Organization, Product, FAQ, Article schemas. Provide ready-to-use templates for missing ones.
 
-**Section 1: Direct Brand Queries**
-Run on ChatGPT + Perplexity + Claude:
-- "What is [Brand]?" / "What does [Brand] do?" / "Is [Brand] any good?" / "What do people say about [Brand]?"
-- Score: Brand known? Description accurate? Sentiment? Misattribution detected?
+### 5. Third-Party Validation (Strong/Weak/Missing)
+LinkedIn, G2/Capterra, directories, press, partner mentions. AI trusts external signals.
 
-**Section 2: Entity Clarity**
-- Is brand name distinctive or easily confused?
-- First 50 words contain: name + specific role + specific audience?
-- Niche claim specific enough? (audience + method + outcome)
+### 6. 30-Day Signal Fix
+Week 1: Entity clarity + schema + directories. Week 2: Cornerstone content + FAQ schema. Week 3: External citations + directory listings. Week 4: Re-audit + measure delta.
 
-**Section 3: Content Signal Strength**
-- Does brand have content answering questions ICP asks AI?
-- Direct-answer language present ("[Brand] helps [audience] with...")?
-- Recency signals (recent posts, current dates)?
+## Anti-Patterns
+❌ SEO-only mindset — ranking #1 on Google ≠ AI citation
+❌ Content dump — 50 thin posts < 1 comprehensive guide
+❌ Brand name assumption — AI doesn't know you unless you're structurally clear
+❌ Generic schema — "a leading software company" teaches AI the wrong thing
+❌ Ignoring third-party signals — if nobody else talks about you, AI won't trust you
 
-**Section 4: Category Presence**
-- Appears when category queries run? ("Best [category] for [audience]")
-- Appears in competitor alternatives queries?
+## Decision Logic
+- Score >70: Focus on competitor gaps, maintain position
+- Score 40-70: Prioritize entity clarity + content signals
+- Score <40: Fix entity clarity + schema first, then build content
 
-**Section 5: Third-Party Authority**
-- External mentions: media, press, podcasts, named clients, publications?
-- Cross-platform footprint (website + X + LinkedIn consistent)?
-
-**Section 6: Competitive Gap**
-- Same queries run for top 3 competitors
-- Where do they appear that brand doesn't?
-
-## Ecosystem Routing
-
-| Score | Route to |
-|-------|----------|
-| Section 2 FAIL (Entity < 3) | Brand Positioning Audit |
-| Section 3 MISSING/WEAK | Content Idea Generator |
-| Section 6 gap found | Competitor Intel Brief |
-
-## Output Format
-
-```
-## AI Discoverability Audit v2: [Brand] — [Date]
-
-### Section Scores
-| Section | Score /5 | Status | Delta (if re-audit) |
-
-### Overall: X/30 — [Rating]
-
-### Priority Action Plan
-**Do This Week:** (score < 2)
-**This Month:** (score 2–3)
-**Long-term:** (score 4, structural)
-
-### Cross-Skill Routes
-[Any routing recommendations]
-
-### Re-audit: [Date + 90 days]
-```
-
----
-*Skill by Brian Wagner | AI Marketing Architect | $19*
+## After Audit
+Offer: A) deep dive on lowest section B) detailed 30-day plan C) competitor benchmark D) quarterly re-audit setup

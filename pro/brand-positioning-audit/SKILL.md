@@ -1,48 +1,19 @@
 ---
 name: brand-positioning-audit
-version: "3.0.0"
-updated: 2026-03-17
-changelog: "v3 — Thariq standard: scripts, gotchas, references, dual-mode"
+version: "3.1.0"
+updated: 2026-03-19
+changelog: "v3.1 — Vibe Skill Creator rebuild: expert voice, real examples, anti-patterns, flattened structure"
 price: "$9"
 author: "@BrianRWagner"
 platform: claude-code
 slug: "brw-brand-positioning-audit"
-description: "Use when: user wants to diagnose why their brand messaging isn't working, score their positioning against a framework, understand their root positioning failure, or get specific rewrite-level copy fixes. Triggers: 'audit my brand positioning', 'why isn't my messaging working', 'does my positioning make sense', 'score my homepage', 'brand positioning diagnosis', 'headline isn't converting', 'ICP clarity check'. NOT for: writing new copy from scratch (use copywriting skill), auditing content strategy (use content audit), or voice/tone issues (use brand-voice-extractor)."
+description: "Use when: user wants to diagnose why their brand messaging isn't working, score their positioning, understand their root failure, or get rewrite-level copy fixes. Triggers: 'audit my brand positioning', 'why isn't my messaging working', 'score my homepage', 'brand positioning diagnosis'. NOT for: writing copy from scratch (use copywriting), auditing content strategy, or voice/tone issues (use brand-voice-extractor)."
 ---
 
-> **Optimized for Claude Code, Cursor, GitHub Copilot, and any AI that accepts markdown instructions.**
-> Paste this SKILL.md into your AI's context or project instructions and run it immediately.
+> **Works with Claude Code, Cursor, GitHub Copilot, and any AI that accepts markdown instructions.**
 
 **Pre-flight script:** `node scripts/audit-prep.mjs <brand_url> [competitor_url]` — fetches and structures page copy before scoring.
 **References:** `references/examples.md` — complete audit example, before/after for each root failure type.
-
----
-
-## ⚠️ Gotchas (Real Failure Points)
-
-**1. URL-only input can fetch the wrong page.**
-If the website runs A/B tests on the homepage, the audit may score a variant, not the canonical positioning. Fix: After fetching, show the hero headline verbatim and ask: "Is this your current hero copy, or a test variant?"
-
-**2. Rewrite pack options all converge on the same angle.**
-Option A/B/C should represent genuinely different positioning strategies. When AI generates all three, they often collapse into slight variations of the same idea. Fix: Explicitly specify the three frames before generating — Benefit-forward (outcome), ICP-specific (who), Differentiation-led (vs.) — and generate each independently.
-
-**3. Root failure diagnosis is too fast.**
-Skimming 3 sentences and declaring "differentiation failure" misses second-order issues. Fix: Root failure must cite evidence from at least 3 of the 6 dimensions and explain why fixing one thing unlocks the rest.
-
-**4. Self-critique scores are performative.**
-The mandatory self-critique almost never produces scores below 7. The AI rates its own work charitably. Fix: Self-critique must cite specific evidence for any score above 7 — not just assert "quality is high." If all 4 scores are 8+, something is wrong.
-
-**5. Competitor benchmark requires a real competitor website.**
-If the user's "competitor" uses a PDF, Notion page, or requires login, the benchmark can't be run. Fix: Fall back to asking the user to paste the competitor's hero copy directly if the URL doesn't return scrapable content.
-
-**6. Score inflation normalizes weak positioning.**
-Audits frequently score 5-6/10 when the real problem is a 2/10 differentiation failure masked by acceptable ICP and proof scores. Fix: Weight differentiation 1.5x in the overall average — it's the most common root failure and most underscored dimension.
-
-**7. Wrong ICP means wrong audit.**
-If the user gives an incorrect ICP ("we sell to SMBs" when they actually close mid-market), the entire message-market fit score is miscalibrated. Fix: Before scoring, ask: "Tell me about a customer who churned in the first 90 days. Who were they?" ICP clarity comes from failure cases, not ideal cases.
-
-**8. Rewrites don't match brand voice.**
-The rewrite pack sounds like "good marketing copy" — not the user's actual voice. Fix: Ask upfront: "Do you have a voice profile?" If yes, load it. If no, ask for 2 sentences that sound like them before writing rewrites.
 
 ---
 
@@ -52,303 +23,226 @@ Most brands don't have a messaging problem. They have a positioning problem — 
 
 "We help teams work better together" is not a positioning. Neither is "The leading platform for [category]." These sound like something, but they say nothing. They don't tell your ICP why you're the obvious choice. They don't separate you from the 47 competitors saying the same thing.
 
-This audit diagnoses your positioning across 6 dimensions. Finds the root failure. Gives you specific rewrite-level fixes — not direction, actual copy you can use.
+This audit finds the root failure in 6 dimensions, then gives you actual copy you can use — not "consider refining your messaging."
 
 ---
 
-## Mode
+## Why Positioning Audits Usually Fail
 
-Detect from context or ask: *"Quick diagnosis, full audit, or full audit with rewrites?"*
+**They score everything equally.** A brand with perfect ICP clarity but zero differentiation gets a 7/10 average score and leaves thinking "not bad!" Meanwhile, their positioning is functionally identical to every competitor.
 
-| Mode | What you get | Best for |
-|------|-------------|----------|
-| `quick` | Root failure identified + top 2 fixes | Fast gut-check, pre-meeting clarity |
-| `standard` | 6-dimension scorecard + root cause + specific rewrite-level fixes | Full positioning overhaul |
-| `deep` | Full audit + headline/subheadline/CTA rewrites + competitive separation analysis | GTM launch, rebrand, investor pitch |
+**They give direction, not copy.** "Strengthen your value proposition" is not advice. "Replace 'We help businesses grow' with 'Double your demo pipeline in 90 days without adding headcount'" is advice.
 
-**Default: `standard`** — use `quick` for fast direction. Use `deep` when you need ready-to-use copy alongside the diagnosis.
+**They miss the root cause.** Brands have one root failure that causes all the symptoms. Fix the root and everything improves. Fix the symptoms and nothing improves.
 
 ---
 
-## Context Loading Gates
+## ⚠️ Gotchas
 
-**The AI must confirm all gates before running any analysis.**
+**URL-only input might fetch a test variant.** If they're A/B testing, show the hero headline verbatim and ask: "Is this your current hero copy?"
 
-```
-GATE CHECK — Required Before Starting
-======================================
-[ ] Brand URL provided (minimum required)
-[ ] OR current messaging pasted directly (if no website)
-[ ] ICP defined — optional but significantly improves diagnosis
-[ ] Top competitors identified — optional but improves competitive separation scoring
-[ ] Stated frustration with current positioning — optional, helps focus the audit
+**Self-generated rewrites converge.** When you write Options A/B/C, they tend to collapse into variations of the same angle. Fix: Decide the three frames BEFORE generating — Benefit-forward, ICP-specific, Differentiation-led — then generate each independently.
 
-If URL is unavailable: ask user to paste homepage copy and about page copy.
-Do not audit vague descriptions. Need actual messaging to analyze.
-```
+**Wrong ICP means wrong audit.** If they say "we sell to SMBs" but actually close mid-market, every score is miscalibrated. Ask: "Tell me about a customer who churned in 90 days. Who were they?" ICP clarity comes from failure cases, not ideal ones.
 
 ---
 
-## Phase 1: Context Intake
+## How to Run the Audit
 
-Ask for all inputs in a single message:
+**Get these inputs in one message (no back-and-forth):**
 
 ```
-To run your brand positioning audit, give me:
-
 1. Brand URL (homepage + about page if possible)
-2. Current tagline or hero headline (if you know it)
-3. Who you sell to — be specific. "B2B founders" is better than "businesses."
-4. Your top 2-3 competitors (optional)
-5. What specifically frustrates you about your current positioning? (optional — helps focus the audit)
+2. Who you sell to — be specific ("B2B founders doing $1-10M" not "businesses")
+3. Top 2-3 competitors (optional but improves the audit significantly)
+4. What frustrates you about current positioning? (optional — helps focus)
 ```
 
-If this is a re-audit: load prior audit scores and show deltas per dimension.
+If no URL: ask them to paste homepage copy and about page copy directly. Don't audit descriptions — audit actual messaging.
 
 ---
 
-## Phase 2: Analysis — Research + Scoring
+## The 6 Dimensions
 
-**Fetch the brand's website and capture:**
-- Exact hero headline and subheadline (verbatim)
-- About page positioning language (verbatim)
-- Any stated ICP or "who it's for" language
-- How they describe differentiation
-- What proof they include (testimonials, case studies, data)
-- Primary CTA copy
+Score each 1-10. Quote exact copy as evidence for every score.
 
-**Score each of the 6 dimensions on a 1-10 scale:**
+### 1. ICP Clarity
+Can someone read this and immediately know if they're the target customer?
 
----
+**10:** "For solo consultant-founders doing their own marketing" — specific enough to name 5 real people who fit.
+**5:** "For marketers" — which marketers? Doing what? At what stage?
+**1:** "For teams everywhere" — meaningless.
 
-### Dimension 1: ICP Clarity (1-10)
+### 2. Value Clarity
+Is the primary value stated in concrete, outcome terms?
 
-Is it clear exactly who this is for?
+**10:** "Cut your response time in half by routing support tickets automatically" — specific outcome + mechanism.
+**5:** "Streamline your workflow" — category, not value.
+**1:** "The better way to work" — empty.
 
-**A 10:** The ICP is specific enough that someone could name 5 real people who fit.
-**A 5:** General category stated but no specificity (e.g., "for marketers" — which marketers? doing what? at what stage?)
-**A 1:** No indication of who this is for. Anyone could be the customer.
+### 3. Differentiation (Weight 1.5×)
+Could a competitor say this exact thing? If yes, it's not differentiation.
 
-**Evidence:** Quote the exact copy that does or doesn't define ICP clearly.
+This is the most important dimension and the most commonly failed. Weight it 1.5× in the overall score.
 
----
+**10:** Position is so specific a competitor would need to change their business to claim it.
+**5:** Differentiation angle exists but any competitor could claim it with a messaging tweak.
+**1:** Interchangeable with every competitor.
 
-### Dimension 2: Value Clarity (1-10)
+### 4. Proof Credibility
+Are claims earned or asserted?
 
-Is the primary value proposition stated in concrete, outcome terms?
+**10:** "Helped 4,200 DTC brands average 23% higher ROAS" — specific, verifiable.
+**5:** "Thousands of happy customers" — vague.
+**1:** Pure assertion with nothing to back it up.
 
-**A 10:** Specific outcome stated with a mechanism. "Cut your response time in half by routing support tickets automatically."
-**A 5:** Category stated but benefit is vague. "Streamline your workflow."
-**A 1:** No clear value stated. "The better way to work."
+### 5. Message-Market Fit
+Does the language match how the ICP talks about the problem — or how the company talks about itself?
 
-**Evidence:** Quote the exact copy that does or doesn't articulate value.
+**10:** Uses the ICP's exact words, pain points, and framing.
+**5:** Close, but noticeable inside-out language (features, capabilities, platform).
+**1:** Entirely internal jargon. Sounds like how founders describe the product, not how customers describe the problem.
 
----
-
-### Dimension 3: Differentiation (1-10)
-
-Does anything about this positioning make it impossible to swap with a competitor?
-
-**A 10:** The position is specific enough that a competitor would need to fundamentally change their business to claim it.
-**A 5:** There's a differentiation angle but it's not owned — any competitor could claim it too with minor messaging changes.
-**A 1:** No differentiation. Interchangeable with every competitor.
-
-**Evidence:** Quote the differentiation copy (or note its absence). Test: could a competitor say this exact thing?
-
----
-
-### Dimension 4: Proof Credibility (1-10)
-
-Does the positioning feel earned, or asserted?
-
-**A 10:** Specific numbers, named clients, before/after results, recognized validators.
-**A 5:** Some proof exists but it's vague or generic (e.g., "thousands of happy customers").
-**A 1:** Pure assertion. Nothing to validate the claim.
-
-**Evidence:** List what proof elements are present and rate their specificity.
-
----
-
-### Dimension 5: Message-Market Fit (1-10)
-
-Does the language match how the ICP actually talks about this problem?
-
-**A 10:** The copy uses the exact phrases, pain points, and framing the ICP uses in their own words — not how the company wants to describe itself.
-**A 5:** Close, but there's noticeable inside-out language (features, capabilities, platform) rather than outside-in language (outcomes, pain, situation).
-**A 1:** The language is entirely internal. Sounds like how the founders talk about the product, not how customers talk about their problem.
-
-**Evidence:** Quote 2-3 phrases that feel "inside-out" vs. how the ICP would actually phrase the problem.
-
----
-
-### Dimension 6: Competitive Separation (1-10)
-
+### 6. Competitive Separation
 Is there a clear reason to choose this over alternatives?
 
-**A 10:** The positioning creates a specific comparison frame that makes competitors' alternatives look like wrong choices for the right buyer.
-**A 5:** Better/faster/cheaper than competitors — but doesn't explain why the comparison is one-sided.
-**A 1:** No competitive framing at all. Assumes the buyer has no alternatives.
-
-**Evidence:** Quote competitive separation language (or note absence). Name the closest competitor — could they make the same claim?
+**10:** Creates a comparison frame where competitors' approaches look wrong for the right buyer.
+**5:** "Better/faster/cheaper" without explaining why.
+**1:** No competitive framing at all.
 
 ---
 
-## Phase 3: Generate — Full Audit Output
+## Root Failure Types
 
-### Root Failure Identification
+After scoring all 6, identify THE root failure — one thing that's causing the others:
 
-After scoring all 6 dimensions, identify the single root failure. Don't list all problems — find the one that's causing the others.
-
-**Root failure types:**
-- **Clarity failure** — Can't tell what this is or who it's for. Everything else is downstream of not knowing the fundamental answer.
-- **Audience failure** — ICP is too broad or wrong. All the messaging is aimed at no one in particular.
-- **Differentiation failure** — The position is real but not owned. Competitors say the same thing.
+- **Clarity failure** — Can't tell what this is or who it's for. Everything else is downstream.
+- **Audience failure** — ICP is too broad. All messaging is aimed at no one in particular.
+- **Differentiation failure** — Position is real but not owned. Competitors say the same thing.
 - **Proof failure** — Claims aren't earned. Positioning requires proof that doesn't exist yet.
 - **Language failure** — Positioning insight is right but expressed in inside-out language. Rewrites will fix it.
 
-State: "The root failure is: [type] — [one sentence on why]"
+State it clearly: "The root failure is [type] — [one sentence on why]."
 
 ---
 
-### Audit Output Format
+## Anti-Patterns (What Fails Every Time)
+
+❌ **The Aspirational Position.** "We're the Stripe of [category]." You're not. Positioning by analogy to a $100B company sets expectations you can't meet and says nothing about what you actually do.
+
+❌ **The Feature Parade.** Listing every feature on the homepage instead of stating one clear outcome. If the first screen has 8 bullet points, you don't have positioning — you have a spec sheet.
+
+❌ **The Category Creator Trap.** Inventing a new category ("we're an AI-powered revenue enablement platform") when you haven't earned category creation. If nobody Googles your category, it doesn't exist yet.
+
+❌ **The Everyone Welcome Mat.** "For teams of all sizes, across all industries." This isn't inclusive — it's indecisive. Great positioning alienates people who aren't the right fit. That's a feature, not a bug.
+
+❌ **The Vague Differentiator.** "We're different because we focus on simplicity." So does every competitor. Real differentiation is specific enough that a competitor would have to change their product to claim it.
+
+❌ **The Proof Dodge.** "Trusted by leading companies" with no logos, no names, no numbers. If you can't name them, the proof isn't proof.
+
+---
+
+## Before/After: Real Positioning Rewrites
+
+### Example: Vague SaaS Homepage
+
+**Before:**
+> **Hero:** "The smarter way to manage your business"
+> **Sub:** "Our comprehensive platform helps teams work more efficiently with AI-powered insights."
+
+**Root failure:** Clarity — can't tell what this is, who it's for, or what it does.
+
+**After (Option A — Benefit-forward):**
+> **Hero:** "Get 4 hours back every week"
+> **Sub:** "Automate the admin work that's eating your day — invoicing, scheduling, follow-ups. Built for solo consultants."
+
+**After (Option B — ICP-specific):**
+> **Hero:** "Built for solo consultants who hate admin"
+> **Sub:** "One place for invoicing, scheduling, and client follow-ups. Stop toggling between 6 tabs."
+
+**After (Option C — Differentiation-led):**
+> **Hero:** "Your clients think you have an assistant. You don't."
+> **Sub:** "Automatic invoicing, smart scheduling, and follow-up sequences that run while you do the real work."
+
+**Why these are different:** A leads with outcome, B leads with who it's for, C leads with the owned position. Each is a genuinely different strategy, not a word swap.
+
+---
+
+## Output Format
 
 ```markdown
 # Brand Positioning Audit — [Brand Name]
-*Audited: [Date] | Version 2.0*
+*Audited: [Date]*
 
 ## Scorecard
 
-| Dimension | Score (1-10) | Notes |
-|-----------|-------------|-------|
-| ICP Clarity | [X] | [one-line summary] |
-| Value Clarity | [X] | [one-line summary] |
-| Differentiation | [X] | [one-line summary] |
-| Proof Credibility | [X] | [one-line summary] |
-| Message-Market Fit | [X] | [one-line summary] |
-| Competitive Separation | [X] | [one-line summary] |
-| **Overall** | **[avg]** | |
+| Dimension | Score | Evidence |
+|-----------|-------|----------|
+| ICP Clarity | [X] | [quote from site + one-line assessment] |
+| Value Clarity | [X] | [quote + assessment] |
+| Differentiation (1.5×) | [X] | [quote + assessment] |
+| Proof Credibility | [X] | [quote + assessment] |
+| Message-Market Fit | [X] | [quote + assessment] |
+| Competitive Separation | [X] | [quote + assessment] |
+| **Overall (weighted)** | **[X]** | |
 
 ## Root Diagnosis
 
-Root failure: **[type]**
+**Root failure: [type]**
 
-[2-3 sentences on what's actually broken and why fixing the other dimensions won't matter until this is resolved]
+[2-3 sentences: what's broken, why fixing other dimensions won't matter until this is resolved]
 
-## Evidence (verbatim from site)
+## Current Messaging (verbatim)
 
-Current hero: "[verbatim headline]"
-Current sub: "[verbatim subheadline]"
-
-What's missing: [specific element — ICP? outcome? proof? differentiation?]
+Hero: "[exact headline]"
+Sub: "[exact subheadline]"
+CTA: "[exact CTA text]"
 
 ## Priority Fixes
 
-**Fix 1 (address root failure first):**
-[Specific action — e.g., "Narrow the ICP from 'marketers' to 'solo consultant-founders doing their own marketing'"]
-Why: [one sentence]
+**Fix 1 (root failure):** [Specific action with reasoning]
+**Fix 2:** [Specific action]
+**Fix 3:** [Specific action]
 
-**Fix 2:**
-[Specific action]
-Why: [one sentence]
-
-**Fix 3:**
-[Specific action]
-Why: [one sentence]
-
-## Rewrite Pack
-
-Three specific rewrites you can use now. No direction — actual copy.
+## Rewrite Pack (ready to use)
 
 **Option A — Benefit-forward:**
-Headline: [rewrite]
-Subheadline: [rewrite]
-CTA: [rewrite]
+Hero: [rewrite] | Sub: [rewrite] | CTA: [rewrite]
 
 **Option B — ICP-specific:**
-Headline: [rewrite — leads with who it's for]
-Subheadline: [rewrite]
-CTA: [rewrite]
+Hero: [rewrite] | Sub: [rewrite] | CTA: [rewrite]
 
 **Option C — Differentiation-led:**
-Headline: [rewrite — leads with the owned position]
-Subheadline: [rewrite]
-CTA: [rewrite]
-
-## Strategic Risks if Unchanged
-
-1. [What happens if the root failure isn't fixed — specific consequence]
-2. [Second risk]
-3. [Third risk — may be competitive: "A competitor who positions against this exact gap will take your category"]
+Hero: [rewrite] | Sub: [rewrite] | CTA: [rewrite]
 ```
 
 ---
 
-## Phase 4: Self-Critique
+## After the Audit
 
-After generating the audit, run this mandatory review:
-
-```
-SELF-CRITIQUE — Audit Quality Check
-=====================================
-Scorecard accuracy (1-10): ___
-- Are scores based on actual evidence from the site, not gut feel?
-- Did I quote verbatim copy to justify each score?
-
-Root failure specificity (1-10): ___
-- Is the root failure one concrete thing, or a list of problems dressed up as one?
-- If someone asked "what should I fix FIRST?" — is the answer obvious?
-
-Rewrite quality (1-10): ___
-- Are the three rewrites genuinely different positioning approaches?
-- Or are they slight variations of the same idea?
-- Would any of these headlines stop a cold prospect in the right direction?
-
-Risks specificity (1-10): ___
-- Are the strategic risks specific to this brand's situation?
-- Or could they apply to any brand with a positioning problem?
-
-If any score < 7: revise that section.
-Improvements: [specific]
-
-Overall: [one sentence — is this audit decision-quality?]
-```
-
----
-
-## Phase 5: Final Output + Iteration Menu
-
-Present the refined audit. Then close with:
+End with:
 
 ```
-That's your brand positioning audit for [Brand].
-Overall score: [X]/10 | Root failure: [type]
+Your positioning audit for [Brand]. Overall: [X]/10 | Root failure: [type]
 
 What's next?
-
-A) Rewrite mode — I'll generate 3 more headline options for the strongest positioning angle
-B) Competitor benchmark mode — I'll audit one competitor using the same scorecard and show where you have an advantage
-C) Decision mode — You're choosing between two positioning directions; I'll evaluate each against the scorecard
+A) More headline options — 5 variations on the strongest positioning angle
+B) Competitor benchmark — same scorecard on a competitor, side-by-side comparison
+C) Decision mode — evaluating two positioning directions against the scorecard
 D) Done — take the rewrites and implement
-
-Reply with a letter or describe where you want to go.
 ```
-
-**If A — Rewrite Mode:**
-Identify the highest-potential positioning angle from the audit. Generate 5 additional variations optimized for that angle. For each: note what it prioritizes (clarity / differentiation / ICP specificity / proof) and the context it's best suited for (homepage hero / sales deck / LinkedIn bio / cold outreach).
-
-**If B — Competitor Benchmark:**
-Run the same 6-dimension scorecard on the named competitor. Present side-by-side:
-| Dimension | [Brand] | [Competitor] | Advantage |
-|-----------|---------|--------------|-----------|
-| ICP Clarity | X | X | [who wins] |
-| ...etc |
-
-Conclude: "Your clearest competitive advantage is [dimension]. The rewrite should exploit this."
-
-**If C — Decision Mode:**
-Score each positioning direction candidate against the 6 dimensions. Recommend one. Explain why the other is weaker — specifically, which dimension it fails on and why that matters for their ICP.
 
 ---
 
-*Brand Positioning Audit v2.0.0 — Part of the AI Marketing Skills library by Brian Wagner (@BrianRWagner)*
+## Quality Checklist
+
+- [ ] Every score backed by verbatim copy from the site (not gut feel)
+- [ ] Root failure is ONE thing, not a list
+- [ ] Rewrite options are genuinely different strategies (not word swaps)
+- [ ] Rewrites use specific, concrete language (no "streamline" or "optimize")
+- [ ] Differentiation weighted 1.5× in overall score
+
+---
+
+*Brand Positioning Audit v3.1.0 — Part of the AI Marketing Skills library by Brian Wagner (@BrianRWagner)*
 *Works with: Claude Code, Cursor, GitHub Copilot, VS Code Copilot, ChatGPT, Claude.ai*

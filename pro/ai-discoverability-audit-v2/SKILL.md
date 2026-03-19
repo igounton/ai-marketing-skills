@@ -2,7 +2,9 @@
 
 **Price:** $19  
 **Author:** Brian Wagner (@BrianRWagner)  
-**Category:** Marketing  
+**Version:** 3.1.0  
+**Updated:** 2026-03-19  
+**Changelog:** v3.1 — Vibe Skill Creator rebuild: anti-patterns section, trimmed operational overhead, expert voice sharpened  
 
 > "Find out if AI can find you — and fix it before your competitors do."
 
@@ -19,41 +21,6 @@ Detect from context or ask: *"Quick scan, full Signal Audit, or deep competitive
 | `deep` | Full audit + quarterly re-audit comparison + competitive AI benchmarking + 90-day roadmap | Full AI discoverability overhaul |
 
 **Default: `standard`** — use `quick` for a fast read. Use `deep` if this is a re-audit or you need competitive benchmarking included.
-
----
-
-## Runtime Context
-**Platform:** Claude Code / OpenClaw  
-**File system:** Available. Read prior outputs before starting. Save all outputs to the paths specified in Memory Protocol.  
-**Cross-skill dependencies:**
-- Upstream: Brand Positioning Audit (entity confusion is a positioning problem first)
-- Downstream: Content Idea Generator (topic gaps), Competitor Intel Brief (competitive AI search gaps)
-
----
-
-## Memory Protocol
-
-**Save output to:** `audits/ai-discoverability-[brand]-YYYY-MM-DD.md`
-
-**At session start:** Check if a prior audit file exists for this brand. If yes — this is a quarterly re-audit. Follow this flow:
-
-1. Load the prior audit into context
-2. Run the new audit fresh
-3. For each of the 6 sections: show `[Prior Score] → [New Score] = [Delta]`
-4. Highlight: biggest improvements, biggest regressions, any new risks
-5. Update the 30-day action plan based on what did and didn't get implemented since the last audit
-
-**Cross-session rule:** Never treat a re-audit as a cold start. The delta is the value — show what moved.
-
----
-
-## Ecosystem Connections
-
-Route findings to other skills based on scores:
-
-- **Entity clarity score < 3 (Section 2 FAIL):** Feed into Brand Positioning Audit — entity/positioning confusion is a positioning problem that needs to be solved there first before AI signals will improve
-- **Content signal score = MISSING or WEAK (Section 3):** Feed topic gaps into Content Idea Generator with specific questions the ICP asks AI that the brand doesn't answer
-- **Competitor benchmark shows a gap (Section 1):** Feed into Competitor Intel Brief for that specific competitor — understand their AI signal strategy before trying to close the gap
 
 ---
 
@@ -303,6 +270,22 @@ Based on gaps found in Sections 1-5, create a prioritized action plan:
 - Identify next priority gaps
 
 **Recommended cadence:** Run this full audit quarterly. AI systems update their knowledge bases constantly — what worked in Q1 may need adjustment by Q2.
+
+---
+
+## Anti-Patterns (What Hurts Your AI Visibility)
+
+❌ **The SEO-Only Mindset.** Traditional SEO and AI discoverability are different games. Ranking #1 on Google doesn't mean AI systems cite you. AI pulls from structured data, entity clarity, and third-party validation — not keyword density or backlink volume.
+
+❌ **The Content Dump.** Publishing 50 blog posts that all say variants of the same thing. AI systems prefer depth on specific topics over breadth across vague ones. One comprehensive "How to Calculate Customer LTV for Shopify" beats 10 thin posts about e-commerce metrics.
+
+❌ **The Brand Name Assumption.** "People know who we are." AI doesn't. If ChatGPT can't describe your company accurately in one sentence, your entity clarity is broken. This is usually a homepage problem, not a PR problem.
+
+❌ **The Schema Checkbox.** Adding schema markup but filling it with generic descriptions. `"description": "A leading software company"` in your Organization schema is worse than no schema — it actively teaches AI systems the wrong thing about you.
+
+❌ **The "We'll Get to It" Strategy.** Waiting to fix AI discoverability until it's "more mature." Your competitors are building their AI signal now. The brands that show up in AI answers today are training the models for tomorrow. Early movers compound.
+
+❌ **Ignoring Third-Party Signals.** Your brand exists only on your own website. AI systems weight external validation heavily — G2 reviews, directory listings, press mentions, partner pages. If nobody else talks about you, AI has no reason to trust your self-description.
 
 ---
 

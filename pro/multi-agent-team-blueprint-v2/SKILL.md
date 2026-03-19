@@ -1,278 +1,83 @@
 ---
 name: multi-agent-team-blueprint
-version: "3.0.0"
-updated: 2026-03-17
-changelog: "v3 — Thariq standard: scripts, gotchas, references, dual-mode"
+version: "3.1.0"
+updated: 2026-03-19
+changelog: "v3.1 — Vibe Skill Creator rebuild: expert voice, friction removed, anti-patterns added"
 price: "$19"
 author: "@BrianRWagner"
 type: persona
 slug: "brw-multi-agent-team-blueprint"
-description: "Use when: user wants to build a multi-agent AI system, deploy multiple coordinated AI agents, set up overnight autonomous agent operations, create a content pipeline with multiple agents, or scale beyond a single AI assistant. Triggers: 'build a team of agents', 'multi-agent setup', 'AI content pipeline', 'Scribe and Proof agents', 'overnight autonomous AI work', 'agent cron jobs', 'agents that work while I sleep'. NOT for: single-agent setup (use Chief of Staff skill), simple task automation, or users who haven't deployed at least one agent yet."
+description: "Use when: user wants to build a multi-agent AI system, deploy multiple coordinated AI agents, set up overnight autonomous agent operations, or scale beyond a single AI assistant. Triggers: 'build a team of agents', 'multi-agent setup', 'AI content pipeline', 'agents that work while I sleep'. NOT for: single-agent setup (use Chief of Staff skill), simple task automation, or users who haven't deployed at least one agent yet."
 ---
 
-> **Optimized for OpenClaw, Claude Code, Cursor, and any AI that accepts markdown instructions.**
-> Deploy agents incrementally using the starter kits below. Full team online in 4 weeks.
-
-**Quick setup:** `node scripts/setup-team.mjs [workspace] --starter=A` (A=Content, B=Research, C=Ops)
-**References:** `references/examples.md` — queue examples, night shift transcript, failure recovery.
+> **Works with OpenClaw, Claude Code, Cursor, and any AI that accepts markdown instructions.**
+> Start with one starter kit. Have agents running tonight.
 
 ---
 
-## ⚠️ Gotchas (Real Failure Points)
+# Multi-Agent Team Blueprint
 
-**1. Queue files get corrupted when two agents run simultaneously.**
-If Scribe and Proof both write to `queues/content.json` in the same second, the JSON breaks. Fix: Each agent reads the queue, updates ONLY its own items, and writes back immediately. The `scripts/setup-team.mjs` creates valid queue structures; agents must follow the atomic update pattern.
+One agent is an assistant. Three agents are a system. Ten agents are a company.
 
-**2. Proof runs before Scribe finishes.**
-Proof cron at 9 PM runs before Scribe's 2 AM cron produces anything. Proof reviews an empty folder and reports nothing to review — silently failing. Fix: Schedule Scribe first (2 AM), Proof second (6 AM). Or add an empty-folder guard to Proof's prompt.
+But here's what nobody tells you: most people who try to build a 10-agent system fail, and they fail in the first week. Not because the architecture is hard — because they deploy everything at once and nothing works together.
 
-**3. "10 agents" actually requires separate AI subscriptions.**
-The routing table assumes Codex CLI (OpenAI), Gemini (Google), and your primary model (Anthropic). Running a full 10-agent team = 3+ subscriptions + infrastructure for cron. Fix: Starter kits exist precisely for this reason — Kit A (3 agents) costs $25-65/month and validates the system before committing to full setup.
-
-**4. Night shift meeting is one agent, not many.**
-The meeting template spawns a single session playing all roles. It doesn't coordinate between actual agents — it's simulation. Transcripts are useful, but they don't replace real multi-agent coordination. Fix: Be clear about this in Week 1 expectations — simulation first, real coordination after proving the pattern.
-
-**5. Cron timezone mismatches cause off-hours runs.**
-If your server is UTC and you configure "9 AM ET" without timezone handling, Scribe runs at 1 AM ET in winter or 2 AM ET in summer. Fix: All cron templates in this skill use `"tz": "America/New_York"` — adjust for your timezone before deploying.
-
-**6. Agent escalation has no timeout.**
-If an agent "escalates to Chief of Staff" but CoS isn't running, the item sits in an undefined state. Fix: Every queue item needs a `timeout` field — if in_progress for >2 hours without update, auto-flag as `blocked`.
-
-**7. Proof rejection feedback loop is manual.**
-When Proof rejects a Scribe draft, Scribe doesn't automatically see the feedback unless it's written back to the draft file. Fix: Proof must write rejection notes to the draft file itself, not to a separate report. Scribe reads drafts before writing.
-
-**8. Memory consolidation at 3 AM may miss sessions that run overnight.**
-If Forge is running an overnight build that logs to memory, and consolidation runs at 3 AM mid-build, consolidation captures an incomplete picture. Fix: Run memory consolidation after all overnight agents complete (5:30 AM or later).
-
-One agent is an assistant. Ten agents is a company.
-
-This blueprint gives you the architecture, roles, routing, scheduling, and deployment plan for a 10-agent team that handles content, research, ops, sales, and overnight builds. Each agent has a clear role, a cost-appropriate model, and a cron schedule.
-
-You don't deploy all 10 at once. You start with 3, prove the system, then scale.
+The teams that actually run? They started with 3 agents, proved the handoff pattern, then scaled. This blueprint gives you the architecture for 10, but forces you to start with 3. Because the handoff — one agent's output becoming another's input — is the only thing that matters.
 
 ---
 
-## What's New in v2
+## The One Thing That Makes Multi-Agent Work
 
-- **Starter kits** — Pre-built 3-agent configurations for common use cases (content, research, ops)
-- **Cost calculator** — Estimate monthly spend per agent before deploying
-- **Scaling guide** — Phase 1 → 2 → 3 → 4 deployment with clear milestones
-- **Inter-agent communication** — How agents pass work, escalate, and meet
-- **Quality gates** — Built-in review checkpoints so nothing ships unreviewed
-- **Queue system** — JSON-based task queues that agents read and write
-- **Failure recovery** — What happens when an agent fails, and how to handle it
-- **Real cron templates** — Copy-paste JSON, not pseudocode
+It's not the org chart. It's not the cron schedules. It's not the model routing.
 
----
+**It's the handoff.**
 
-## Mode
+Scribe writes a draft → Proof reviews it → approved content lands in `/ready-to-post/`. If that handoff works reliably, you have a system. If it doesn't, you have 3 agents running independently and calling it "coordination."
 
-Detect from context or ask: *"Quick team overview, standard deployment, or full architecture deep-dive?"*
-
-| Mode | What you get | Best for |
-|------|-------------|----------|
-| `quick` | Org chart + recommended starter kit for your use case | Evaluating whether this fits |
-| `standard` | Full team roles + cron templates + deployment plan | Setting up your first agents |
-| `deep` | Full architecture + cost modeling + custom agent design + scaling plan | Building a production multi-agent system |
-
-**Default: `standard`**
+**Every system you build should prove one handoff before adding another agent.**
 
 ---
 
-## The Org Structure
+## ⚠️ The Real Failure Points
 
-```
-HUMAN (CEO)
-  └── 🔱 Chief of Staff (Main Agent) — Premium model
-        ├── ✏️ Scribe (Content Writer) — Mid-tier
-        ├── 🔧 Forge (Builder) — Free/Codex
-        ├── 🔍 Proof (Editor/QA) — Mid-tier
-        ├── 📡 Radar (Intel/Research) — Mid-tier
-        ├── 🔬 Neptune (Deep Research) — Free/Gemini
-        ├── 📊 Apollo (Sales/Biz Dev) — Mid-tier
-        ├── 📋 Atlas (Ops/PM) — Mid-tier
-        ├── 👀 Watch (Inbox Monitor) — Mid-tier
-        └── 🌈 Iris (Triage/Router) — Cheapest
-```
+These aren't theoretical — they're what actually breaks:
 
-**Rules:**
-1. ALL content goes through Proof before publishing. No exceptions.
-2. Agents can meet autonomously — deliver transcript to human.
-3. Chief of Staff can delegate to any agent.
-4. Agents escalate to Chief of Staff when uncertain.
-5. Human can call meetings: "Call meeting with Scribe and Proof about X"
+**Queue corruption.** Two agents write to the same JSON file simultaneously → broken JSON → both agents fail silently. Fix: Each agent reads the queue, updates ONLY its own items, writes back immediately. Never let two agents own the same queue.
+
+**Scheduling order.** Proof runs at 9 PM. Scribe runs at 2 AM. Proof reviews an empty folder and reports "nothing to review." Fix: Think about it like a factory — upstream agent runs first, downstream agent runs after. Scribe (2 AM) → Proof (6 AM). Always.
+
+**The subscription surprise.** A full 10-agent team needs Anthropic + OpenAI + Google subscriptions. That's $60-100/month minimum before the agents do anything. Fix: Start with Kit A (3 agents, ~$25-65/month). Prove value before adding cost.
+
+**Timezone drift.** Your server is UTC. You set "9 AM." That's 4 AM or 5 AM ET depending on daylight saving. Fix: Always specify timezone in cron configs. `"tz": "America/New_York"` — never assume UTC matches your timezone.
+
+**Escalation to nowhere.** Agent "escalates to Chief of Staff" but CoS isn't running. Item sits in limbo forever. Fix: Every queue item needs a timeout — if `in_progress` for >2 hours without update, auto-flag as `blocked`.
+
+**Proof rejection dead end.** Proof rejects a draft but writes the feedback to a separate report Scribe never reads. Fix: Proof writes rejection notes directly into the draft file. Scribe reads drafts before writing — it'll see the feedback.
 
 ---
 
-## Agent Role Cards
+## Start Here: Pick Your Kit
 
-### 🔱 Chief of Staff (Main Agent)
-- **Model:** Premium (Opus, GPT-4, etc.)
-- **Role:** Strategy, conversation, delegation, synthesis, memory management
-- **Owns:** Morning brief, human relationship, final decisions
-- **Does NOT:** Write content, build code, do research (delegates all of these)
-- **Cost justification:** This is the brain. Every other agent is a hand.
+Don't read the full org chart first. Pick the 3-agent kit that matches your biggest need and deploy it tonight.
 
-### ✏️ Scribe (Content Writer)
-- **Model:** Mid-tier (Sonnet, GPT-4o, etc.)
-- **Role:** Draft content — social posts, newsletters, articles, emails
-- **Inputs:** Content queue, brand voice docs, recent events
-- **Outputs:** Drafts saved to `/drafts/`, queued for Proof review
-- **Rule:** Nothing goes live without Proof's approval
-- **Schedule:** Daily at 2 AM or on-demand
-
-### 🔧 Forge (Builder)
-- **Model:** Free (Codex CLI) or mid-tier
-- **Role:** Build scripts, integrations, tools, dashboards, automations
-- **Inputs:** Build queue (`queues/build.json`)
-- **Outputs:** Code + README saved to project folder, committed to git
-- **Key:** Use free coding models — `npx @openai/codex exec --full-auto "task"`
-- **Schedule:** Overnight (5 AM) or on-demand
-
-### 🔍 Proof (Editor/QA)
-- **Model:** Mid-tier (needs good judgment)
-- **Role:** Quality gate for ALL content before it goes anywhere
-- **Inputs:** Reads `/drafts/` folder
-- **Outputs:** Approved → `/ready-to-post/`. Rejected → feedback to Scribe.
-- **Scoring:** Every piece rated 1-10. Below 7 = rejected with specific feedback.
-- **Checks:** Voice consistency, hook quality, specifics over vague, platform formatting, factual accuracy
-- **Schedule:** Evening (9 PM) or after Scribe produces drafts
-
-### 📡 Radar (Intel/Research)
-- **Model:** Mid-tier
-- **Role:** Daily intel scan — social media, news, trends, competitor moves
-- **Inputs:** Watch list (competitors, topics, keywords)
-- **Outputs:** Intel report with actionable insights
-- **Escalates:** Flags anything needing deep research to Neptune
-- **Schedule:** Morning (9:30 AM) Monday-Friday
-
-### 🔬 Neptune (Deep Research)
-- **Model:** Free (Gemini, Perplexity) — research burns tokens fast
-- **Role:** Multi-source deep dives, market analysis, technical research
-- **Inputs:** Research requests from Chief of Staff or Radar
-- **Outputs:** Research reports saved to workspace
-- **Key:** Always use free models here. Research is token-heavy.
-- **Schedule:** On-demand only
-
-### 📊 Apollo (Sales/Biz Dev)
-- **Model:** Mid-tier
-- **Role:** Pipeline monitoring, follow-up nudges, outreach drafting
-- **Inputs:** Deal pipeline, CRM data, contact lists
-- **Outputs:** Pipeline status + draft follow-up emails
-- **Checks:** Stale deals (no touch in 3+ days), follow-up timing
-- **Schedule:** Mon/Wed/Fri at 9 AM
-
-### 📋 Atlas (Ops/PM)
-- **Model:** Mid-tier
-- **Role:** Dashboard updates, task tracking, system health, weekly reviews
-- **Inputs:** Project files, task lists, system status
-- **Outputs:** Updated dashboards, task status reports
-- **Schedule:** Morning + evening daily
-
-### 👀 Watch (Inbox Monitor)
-- **Model:** Mid-tier
-- **Role:** Monitor email/messages for urgent items
-- **Inputs:** Email inbox (IMAP), messaging channels
-- **Outputs:** Alerts for urgent items, daily digest for non-urgent
-- **Schedule:** Heartbeat-based (every 30-60 min during business hours)
-
-### 🌈 Iris (Triage/Router)
-- **Model:** Cheapest (Haiku, Flash, etc.)
-- **Role:** Classify incoming messages, route to correct agent
-- **Inputs:** Unclassified messages, requests, brain dumps
-- **Outputs:** Routing decisions — which agent handles what
-- **Schedule:** Real-time (if configured) or periodic
-
----
-
-## Model Routing & Cost Strategy
-
-The #1 cost mistake: running everything on your most expensive model.
-
-| Agent | Model Tier | Est. Monthly Cost | Why This Tier |
-|-------|-----------|-------------------|---------------|
-| Chief of Staff | Premium | $15-40 | Strategy, nuance, judgment |
-| Scribe | Mid-tier | $5-15 | Creative but structured |
-| Forge | Free (Codex) | $0-5 | Use ChatGPT Pro / free tier |
-| Proof | Mid-tier | $3-8 | QA needs judgment, not genius |
-| Radar | Mid-tier | $5-12 | Research + synthesis |
-| Neptune | Free (Gemini) | $0-3 | Deep research — use free quota |
-| Apollo | Mid-tier | $3-8 | Structured, repeatable |
-| Atlas | Mid-tier | $3-8 | Ops tasks, dashboards |
-| Watch | Mid-tier | $5-10 | Email reading |
-| Iris | Cheapest | $1-3 | Simple classification |
-
-**Full team estimate:** $40-112/month (vs. $200+ if everything ran on premium)
-
-**Result:** Only 1 agent on expensive model. 70%+ cost savings.
-
----
-
-## Starter Kits
-
-Don't deploy all 10 agents. Pick the starter kit that matches your biggest need.
-
-### Kit A: Content Machine (3 agents)
-**Best for:** Founders who need consistent content output.
-
-Agents: **Chief of Staff** + **Scribe** + **Proof**
+### Kit A: Content Machine
+**You need this if:** You want consistent content output without writing everything yourself.
 
 ```
-Flow: Chief of Staff sets direction →
-      Scribe drafts content (2 AM cron) →
-      Proof reviews and scores (9 PM cron) →
-      Approved content → /ready-to-post/
+Chief of Staff (you) → Scribe (drafts at 2 AM) → Proof (reviews at 6 AM)
+                                                      ↓
+                                              /ready-to-post/
 ```
 
-Monthly cost: ~$25-65
+**Agents:**
+| Agent | Model | Monthly Cost | Job |
+|-------|-------|-------------|-----|
+| 🔱 Chief of Staff | Premium (Opus/GPT-4) | $15-40 | Strategy, direction, delegation |
+| ✏️ Scribe | Mid-tier (Sonnet/GPT-4o) | $5-15 | Draft content from queue |
+| 🔍 Proof | Mid-tier | $3-8 | Quality gate — nothing ships unreviewed |
 
-### Kit B: Research Engine (3 agents)
-**Best for:** Consultants, strategists, competitive intelligence.
+**Rule:** ALL content goes through Proof. No exceptions. Ever.
 
-Agents: **Chief of Staff** + **Radar** + **Neptune**
-
-```
-Flow: Chief of Staff defines watch list →
-      Radar runs daily scan (9:30 AM cron) →
-      Neptune does deep dives on flagged topics →
-      Intel reports → /research/
-```
-
-Monthly cost: ~$20-55
-
-### Kit C: Operations Hub (3 agents)
-**Best for:** Operators managing projects, deals, and communications.
-
-Agents: **Chief of Staff** + **Watch** + **Atlas**
-
-```
-Flow: Watch monitors inbox (heartbeat) →
-      Atlas tracks tasks and projects →
-      Chief of Staff coordinates and briefs →
-      Daily ops report → morning brief
-```
-
-Monthly cost: ~$25-60
-
----
-
-## Cron Job Templates (Copy-Paste Ready)
-
-### Daily Standup (8:30 AM, Mon-Fri)
-```json
-{
-  "name": "Daily Team Standup",
-  "schedule": {"kind": "cron", "expr": "30 12 * * 1-5", "tz": "America/New_York"},
-  "sessionTarget": "main",
-  "payload": {
-    "kind": "systemEvent",
-    "text": "DAILY STANDUP: Compile updates from overnight agent work, flag blockers, set today's priorities. Check memory files and queues for updates. Send summary."
-  }
-}
-```
-*Note: Adjust `expr` for your timezone. `30 12` = 8:30 AM ET (UTC-4).*
-
-### Scribe — Daily Content Drafting
+**Cron — Scribe (2 AM ET):**
 ```json
 {
   "name": "Scribe Daily Content",
@@ -287,110 +92,94 @@ Monthly cost: ~$25-60
 }
 ```
 
-### Proof — Evening Review
+**Cron — Proof (6 AM ET):**
 ```json
 {
   "name": "Proof Evening Review",
-  "schedule": {"kind": "cron", "expr": "0 1 * * *", "tz": "America/New_York"},
+  "schedule": {"kind": "cron", "expr": "0 10 * * *", "tz": "America/New_York"},
   "sessionTarget": "isolated",
   "payload": {
     "kind": "agentTurn",
-    "message": "You are Proof — Editor/QA. Check drafts/ for pending content. For each piece: (1) Check voice consistency (2) Evaluate hook strength (3) Verify specifics over vague claims (4) Check platform formatting (5) Rate 1-10. Score 7+ → move to ready-to-post/. Below 7 → write specific feedback. Save review notes.",
+    "message": "You are Proof — Editor/QA. Check drafts/ for pending content. For each piece: (1) Check voice consistency (2) Evaluate hook strength (3) Verify specifics over vague claims (4) Check platform formatting (5) Rate 1-10. Score 7+ → move to ready-to-post/. Below 7 → write specific feedback directly in the draft file. Save review notes.",
     "model": "anthropic/claude-sonnet-4-20250514"
   },
   "delivery": {"mode": "announce"}
 }
 ```
 
-### Forge — Overnight Build
-```json
-{
-  "name": "Forge Overnight Build",
-  "schedule": {"kind": "cron", "expr": "0 9 * * *", "tz": "America/New_York"},
-  "sessionTarget": "isolated",
-  "payload": {
-    "kind": "agentTurn",
-    "message": "You are Forge — Builder. Check queues/build.json for pending tasks. Pick the highest priority pending item. Build it. Test it. Commit to git. Mark the queue item as done. Log your work to memory/.",
-    "model": "anthropic/claude-sonnet-4-20250514"
-  },
-  "delivery": {"mode": "announce"}
-}
+### Kit B: Research Engine
+**You need this if:** You need competitive intel, market research, or daily industry scanning.
+
+```
+Chief of Staff → Radar (daily scan at 9:30 AM) → Neptune (deep dives on-demand)
+                                                       ↓
+                                                  /research/
 ```
 
-### Radar — Morning Intel
-```json
-{
-  "name": "Radar Morning Intel",
-  "schedule": {"kind": "cron", "expr": "30 13 * * 1-5", "tz": "America/New_York"},
-  "sessionTarget": "isolated",
-  "payload": {
-    "kind": "agentTurn",
-    "message": "You are Radar — Intel Agent. Run a daily scan: (1) Search web for industry news and competitor moves (2) Check social media trends in your domain (3) Summarize top 3-5 actionable insights. Save intel report. Flag anything that needs deep research.",
-    "model": "anthropic/claude-sonnet-4-20250514"
-  },
-  "delivery": {"mode": "announce"}
-}
+**Agents:**
+| Agent | Model | Monthly Cost | Job |
+|-------|-------|-------------|-----|
+| 🔱 Chief of Staff | Premium | $15-40 | Direction, synthesis |
+| 📡 Radar | Mid-tier | $5-12 | Daily surface scan — news, trends, competitor moves |
+| 🔬 Neptune | Free (Gemini/Perplexity) | $0-3 | Deep dives when Radar flags something |
+
+### Kit C: Operations Hub
+**You need this if:** You're drowning in inbox, tasks, and project coordination.
+
+```
+Watch (monitors inbox) → Chief of Staff → Atlas (tracks projects)
+        ↓                                        ↓
+   alerts for urgent                      daily ops report
 ```
 
-### Night Shift Meeting
-```json
-{
-  "name": "Night Shift Planning",
-  "schedule": {"kind": "cron", "expr": "0 6 * * *", "tz": "America/New_York"},
-  "sessionTarget": "isolated",
-  "payload": {
-    "kind": "agentTurn",
-    "message": "Night shift planning meeting. Play all roles: Radar (intel summary), Scribe (content ideas for tomorrow), Apollo (pipeline status). Agenda: 1) What happened today 2) Content ideas for tomorrow 3) Pipeline follow-ups due 4) Top 3 priorities for the morning. Save transcript to memory/meetings/.",
-    "model": "anthropic/claude-sonnet-4-20250514"
-  },
-  "delivery": {"mode": "announce"}
-}
-```
-
-### Nightly Memory Consolidation
-```json
-{
-  "name": "Nightly Memory",
-  "schedule": {"kind": "cron", "expr": "0 7 * * *", "tz": "America/New_York"},
-  "sessionTarget": "isolated",
-  "payload": {
-    "kind": "agentTurn",
-    "message": "Nightly memory consolidation. Review today's memory file (memory/YYYY-MM-DD.md). Extract key decisions, patterns, and lessons. Update MEMORY.md with anything significant. Archive daily files older than 7 days to memory/archive/.",
-    "model": "anthropic/claude-sonnet-4-20250514"
-  }
-}
-```
-
-### Apollo — Pipeline Health (Mon/Wed/Fri)
-```json
-{
-  "name": "Pipeline Health Check",
-  "schedule": {"kind": "cron", "expr": "0 13 * * 1,3,5", "tz": "America/New_York"},
-  "sessionTarget": "isolated",
-  "payload": {
-    "kind": "agentTurn",
-    "message": "You are Apollo — Sales/Biz Dev. Review active deals and pipeline. Flag stale deals (no touch in 3+ days). Draft nudge emails for stale contacts. Report pipeline status with recommended next actions. Save to pipeline/.",
-    "model": "anthropic/claude-sonnet-4-20250514"
-  },
-  "delivery": {"mode": "announce"}
-}
-```
+**Agents:**
+| Agent | Model | Monthly Cost | Job |
+|-------|-------|-------------|-----|
+| 🔱 Chief of Staff | Premium | $15-40 | Coordination, morning brief |
+| 👀 Watch | Mid-tier | $5-10 | Inbox monitoring, urgent alerts |
+| 📋 Atlas | Mid-tier | $3-8 | Task tracking, dashboards |
 
 ---
 
-## Queue System
+## Scaling: When to Add More Agents
 
-Agents communicate through JSON queues. Simple, file-based, no infrastructure needed.
+**Week 1-2:** Run your starter kit. Fix the handoffs. Get reliable output.
 
-### queues/content.json
+**Week 3-4:** Prove value — are the agents producing things you actually use? If yes, add 1-2 more agents. If not, fix the existing ones before scaling.
+
+**Month 2+:** Consider the full team.
+
+### The Full Org Chart (deploy incrementally, not all at once)
+
+```
+HUMAN (CEO)
+  └── 🔱 Chief of Staff — Premium model ($15-40)
+        ├── ✏️ Scribe — Mid-tier ($5-15)
+        ├── 🔧 Forge — Free/Codex ($0-5)
+        ├── 🔍 Proof — Mid-tier ($3-8)
+        ├── 📡 Radar — Mid-tier ($5-12)
+        ├── 🔬 Neptune — Free/Gemini ($0-3)
+        ├── 📊 Apollo — Mid-tier ($3-8)
+        ├── 📋 Atlas — Mid-tier ($3-8)
+        ├── 👀 Watch — Mid-tier ($5-10)
+        └── 🌈 Iris — Cheapest ($1-3)
+```
+
+**Full team: $40-112/month** — vs. $200+ if everything ran on premium. Only 1 agent needs the expensive model.
+
+---
+
+## Queue System (How Agents Talk to Each Other)
+
+Agents communicate through JSON files. No fancy infrastructure — just files.
+
 ```json
 {
   "items": [
     {
       "id": "content-001",
       "priority": "high",
-      "task": "LinkedIn post about [topic]",
-      "context": "Based on recent conversation about...",
+      "task": "LinkedIn post about AI discoverability",
       "assignee": "scribe",
       "status": "pending",
       "createdAt": "2026-03-01T10:00:00Z"
@@ -399,82 +188,14 @@ Agents communicate through JSON queues. Simple, file-based, no infrastructure ne
 }
 ```
 
-### queues/build.json
-```json
-{
-  "items": [
-    {
-      "id": "build-001",
-      "priority": "medium",
-      "task": "Build dashboard for [metric]",
-      "context": "Track daily progress on...",
-      "assignee": "forge",
-      "status": "pending",
-      "createdAt": "2026-03-01T10:00:00Z"
-    }
-  ]
-}
-```
+**Status flow:** `pending` → `in_progress` → `done` / `blocked` / `failed`
 
-### Status Flow
-```
-pending → in_progress → done
-                      → blocked (with blockedBy note)
-                      → failed (with error note)
-```
-
-Any agent can add items. Only the assigned agent (or Chief of Staff) can change status.
-
----
-
-## Meeting System
-
-### How Meetings Work
-Human says: "Call a meeting with Scribe and Proof about the content calendar."
-
-Chief of Staff:
-1. Spawns an isolated session
-2. Plays all roles (Scribe's perspective, Proof's perspective)
-3. Produces a meeting transcript
-4. Delivers summary to human
-5. Saves transcript to `memory/meetings/`
-
-### Autonomous Meetings (No Human Needed)
-Agents can meet on schedule via cron. Example: Night Shift Meeting runs at 2 AM:
-- Radar briefs on today's intel
-- Scribe proposes content ideas
-- Apollo reviews pipeline
-- Chief of Staff synthesizes priorities for tomorrow
-
-Transcript delivered in the morning brief.
-
----
-
-## Inter-Agent Communication Patterns
-
-### 1. Pipeline (Sequential)
-```
-Scribe → Proof → Ready-to-post
-```
-One agent's output is the next agent's input. Clear handoff via folder structure.
-
-### 2. Escalation
-```
-Any Agent → Chief of Staff → Human (if needed)
-```
-Agent hits uncertainty → escalates to CoS. CoS handles 80%, escalates 20% to human.
-
-### 3. Broadcast
-```
-Chief of Staff → All relevant agents
-```
-New priority or context change. CoS updates queues and memory, agents pick up on next run.
-
-### 4. Research Chain
-```
-Radar (surface scan) → Neptune (deep dive) → Chief of Staff (synthesis)
-```
-Radar finds signal, Neptune investigates, CoS makes it actionable.
+**Rules:**
+- Any agent can ADD items
+- Only the assigned agent changes status
+- Chief of Staff can override anything
+- `blocked` items need a `blockedBy` note
+- `failed` items need an `error` note
 
 ---
 
@@ -482,109 +203,65 @@ Radar finds signal, Neptune investigates, CoS makes it actionable.
 
 ```
 workspace/
-├── SOUL.md
-├── AGENTS.md
-├── ORG-STRUCTURE.md
-├── MEMORY.md
-├── memory/
-│   ├── YYYY-MM-DD.md
-│   ├── meetings/
-│   ├── working-buffer.md
-│   ├── lessons-learned.md
-│   └── archive/
 ├── drafts/              ← Scribe writes here
 ├── ready-to-post/       ← Proof approves to here
 │   ├── linkedin/
 │   └── x/
 ├── queues/
-│   ├── content.json     ← Content ideas
-│   ├── build.json       ← Build tasks
-│   ├── review.json      ← Review queue
-│   └── intel.json       ← Research requests
+│   ├── content.json
+│   ├── build.json
+│   └── research.json
 ├── research/            ← Radar + Neptune output
-├── pipeline/            ← Apollo deal tracking
-└── workspace/           ← Agent working files
+├── memory/              ← Shared memory across agents
+│   ├── YYYY-MM-DD.md
+│   └── meetings/
+└── MEMORY.md            ← Long-term agent memory
 ```
 
 ---
 
-## Deployment Guide (4 Weeks)
+## Anti-Patterns (What Kills Multi-Agent Systems)
 
-### Week 1: Foundation (3 agents)
-Pick your starter kit (A, B, or C above). Deploy 3 agents.
-- Set up cron jobs
-- Create queue files
-- Establish folder structure
-- **Milestone:** First autonomous output delivered (draft, report, or ops update)
+❌ **Deploy 10 agents on day one.** You'll spend all your time debugging coordination instead of getting value. Start with 3.
 
-### Week 2: Add Research (5 agents)
-Add Radar + Neptune (if not already in your kit).
-- Configure watch list for Radar
-- Test escalation flow (Radar → Neptune)
-- **Milestone:** First intel report + deep research delivered
+❌ **All agents on premium model.** Chief of Staff needs judgment. Scribe needs creativity. Forge needs free Codex. Neptune needs free Gemini. Match cost to task.
 
-### Week 3: Add Ops (7-8 agents)
-Add Apollo + Atlas + Watch.
-- Set up pipeline tracking
-- Configure inbox monitoring
-- **Milestone:** Pipeline health check + inbox digest running
+❌ **No quality gate.** Without Proof, AI content ships unreviewed. Every team needs an editor agent. No exceptions.
 
-### Week 4: Full Team (10 agents)
-Add remaining agents (Forge, Iris, any missing).
-- Night shift meetings running
-- Full overnight operations
-- **Milestone:** Wake up to morning brief with overnight work summary
+❌ **Treating the night shift meeting as real coordination.** The meeting template spawns a single session playing all roles — it's a simulation, not actual agent coordination. Useful for ideation. Not a substitute for real handoffs.
 
-**Don't rush.** Each week validates the system before adding complexity.
+❌ **No shared memory.** Agents without memory start from zero every session. Set up daily notes + MEMORY.md before anything else.
+
+❌ **Ignoring cost.** Track monthly spend per agent. An agent that costs $15/month and produces nothing is worse than no agent.
+
+❌ **Over-engineering before proving basics.** If Scribe → Proof doesn't work reliably, adding Radar and Neptune won't help. Fix the foundation first.
 
 ---
 
-## Failure Recovery
+## Meetings (Optional, Powerful)
 
-### Agent Fails to Run
-- Check cron is enabled and schedule is correct
-- Verify model name is valid and accessible
-- Check if the agent's input (queue, folder) exists
-- Review logs for error messages
+Human says: "Call a meeting with Scribe and Proof about the content calendar."
 
-### Agent Produces Bad Output
-- Proof catches content issues (that's its job)
-- For non-content agents: Chief of Staff reviews on next standup
-- Log the failure in `memory/lessons-learned.md`
-- Adjust the agent's prompt based on what went wrong
+Chief of Staff spawns an isolated session, plays all roles, produces a transcript. Useful for:
+- Planning content direction
+- Resolving conflicting priorities
+- Night shift planning (2 AM cron)
 
-### Agent Stuck in Loop
-- Kill the session if it's been running >30 minutes
-- Check for circular dependencies in queues
-- Simplify the task and retry
-
-### Queue Gets Corrupted
-- Keep queue files in git — you can always roll back
-- Each agent should validate JSON before writing
-- Backup: `cp queues/content.json queues/content.json.bak` before each run
+**Meetings are simulations, not real multi-agent coordination.** The transcript is the value — use it for planning, not execution.
 
 ---
 
-## Common Mistakes
+## Quality Checklist
 
-1. **Running all agents on premium model.** Only Chief of Staff needs premium. Everything else = mid-tier or free.
-2. **No quality gate.** Without Proof, AI content goes live unreviewed. Always bad.
-3. **Too many crons too fast.** Start with 3-4 cron jobs. Add as you understand the system.
-4. **No memory system.** Agents without memory = starting from zero every session. Set up daily notes + MEMORY.md first.
-5. **Skipping the org structure.** Without clear roles, agents overlap and contradict each other.
-6. **No queue system.** Agents need shared state to coordinate. Files > conversations for this.
-7. **Ignoring cost.** Track your monthly spend per agent. Cut what doesn't deliver value.
-
----
-
-## Ecosystem Connections
-
-This blueprint works best with:
-- **The Chief of Staff** persona — the main agent that coordinates everything
-- **Morning Brief System** skill — automated daily briefing from overnight agent work
-- **Content Pipeline System** skill — structured Scribe → Proof workflow
+Before deploying any agent:
+- [ ] Does it have a clear input (queue, folder, or trigger)?
+- [ ] Does it have a clear output (where does the work go)?
+- [ ] Is the handoff to the next agent obvious?
+- [ ] Is it on the right model tier?
+- [ ] Does the cron schedule run AFTER its upstream agent?
+- [ ] Is the timezone set correctly?
 
 ---
 
-*Multi-Agent Team Blueprint v2.0.0 — Part of the AI Marketing Skills library by Brian Wagner (@BrianRWagner)*
+*Multi-Agent Team Blueprint v3.1.0 — Part of the AI Marketing Skills library by Brian Wagner (@BrianRWagner)*
 *Works with: OpenClaw, Claude Code, Cursor, GitHub Copilot, VS Code Copilot*
